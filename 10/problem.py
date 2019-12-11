@@ -1,32 +1,44 @@
-import cmath
 from dataclasses import dataclass
+from enum import Enum
 from functools import total_ordering
-import math
 from typing import Any, List, Tuple
 
 
+class Hemisphere(Enum):
+    Left = 0
+    Right = 1
+
+
 @dataclass
-@total_ordering
+# @total_ordering
 class MyRational:
     numerator: int
     denominator: int
-
-    @property
-    def value(self):
-        return self.numerator / self.denominator
-
-    def __eq__(self, other):
-        return self.numerator * other.denominator == other.numerator * self.denominator
-
-    def __lt__(self, other):
-        return self.value < other.value
+    #
+    # @property
+    # def value(self):
+    #     if denominator == 0:
+    #         return 'inf'
+    #
+    #     return self.numerator / self.denominator
+    #
+    # def __eq__(self, other):
+    #     return self.numerator * other.denominator == other.numerator * self.denominator
+    #
+    # def __lt__(self, other):
+    #     if self.value == 'inf' and other.value != 'inf':
+    #         return False
+    #     if self.value != 'inf' and other.value == 'inf':
+    #         return True
+    #
+    #     return self.value < other.value
 
 
 @dataclass
 class Asteroid:
     angle: MyRational
     distance: float
-    quadrant: int
+    hemisphere: Hemisphere
 
 
 def get_input():
@@ -49,12 +61,6 @@ def visible_asteroid_count(from_point: Tuple[int, int], asteroid_map: List[List[
         for column in range(len(asteroid_map[0])):
             if line == from_point[0] and column == from_point[1]:
                 continue
-
-            # if from_point == (2, 2):
-            #     print(line)
-            #     print(column)
-            #     print(asteroid_map[line][column])
-            #     import ipdb; ipdb.set_trace()
 
             if asteroid_map[line][column] == '#':
                 if from_point[0] == line:
@@ -110,19 +116,6 @@ def angle_map(asteroid_map: List[List[str]], station_coords: Tuple[int, int]) ->
         for column in range(len(asteroid_map[0])):
             if asteroid_map[line][column] == '.':
                 continue
-
-
-def coord_to_angle(x: int, y: int) -> float:
-    acos = math.degrees(cmath.acos(x).real)
-    asin = math.degrees(cmath.asin(y).real)
-
-    if asin > 0:
-        return acos
-    else:
-        if acos < 90:
-            return 360 - acos
-        else:
-            return 180 + acos
 
 
 def display_line(line: List[Any]) -> None:
