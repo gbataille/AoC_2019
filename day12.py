@@ -109,10 +109,10 @@ def parse_input(input_str: str) -> SpaceTime:
 
 if __name__ == '__main__':
     input_str = get_input('12')
-#     input_str = """<x=-1, y=0, z=2>
-# <x=2, y=-10, z=-7>
-# <x=4, y=-8, z=8>
-# <x=3, y=5, z=-1>"""
+    input_str = """<x=-1, y=0, z=2>
+<x=2, y=-10, z=-7>
+<x=4, y=-8, z=8>
+<x=3, y=5, z=-1>"""
     log(input_str)
 
     space_time = parse_input(input_str)
@@ -120,11 +120,12 @@ if __name__ == '__main__':
 
     nb_steps = 1000
 
-    for _ in range(nb_steps):
+    iteration = 1
+    while True:
+        iteration += 1
         space_time = time_step(space_time)
+        if space_time.state[0] == space_time.state[-1]:
+            break
 
-    log("---------")
-    for state in space_time.state:
-        log(state.moons[0])
 
-    print(space_time.state[-1].total_energy)
+    print(iteration)
