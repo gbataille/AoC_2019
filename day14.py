@@ -28,7 +28,6 @@ class Reaction:
 class Lab:
     know_reactions: Dict[str, Reaction] = field(default_factory=dict)
     available_reactants: Dict[str, Element] = field(default_factory=dict)
-    fuel_produced: int = 0
 
     def add_reaction(self, reaction: Reaction) -> 'Lab':
         self.know_reactions[reaction.product.name] = reaction
@@ -76,24 +75,29 @@ class Lab:
         return abs(self.available_reactants['ORE'].qty)
 
     def produce_max_fuel(self) -> int:
-        while self.available_reactants['ORE'].qty > 0:
-            self.available_reactants['FUEL'] = Element('FUEL', -1)
-            self.run_lab()
-            self.fuel_produced += 1
-            log(f'Produced {self.fuel_produced} fuel', 'FUEL')
-            if self.nothing_left():
-                log(f'Cycle of product {self.fuel_produced} : remaining_ore {self.available_reactants["ORE"].qty}', 'LEFT')
+        ore_to_fuel = self.compute_ore('FUEL')
+        min_fuel = math.floor(1000000000000 / ore_to_fuel)
 
-        return self.fuel_produced - 1       # we produced one too many
+        return self._dichotomy(min_fuel, 2 * min_fuel)
 
-    def nothing_left(self):
-        result = True
-        for _, element in self.available_reactants.items():
-            if element.name in ['ORE', 'FUEL']:
-                continue
+    def _dichotomy(self, min_bound: int, max_bound: int) -> int:
+        log(f'Dichotomy between {min_bound} and {max_bound}', 'DICHOTOMY')
+        mid_point = math.floor((min_bound + max_bound) / 2)
+        if mid_point == min_bound:
+            return min_bound
 
-            if element.qty != 0:
-                return False
+        if self.can_produce(mid_point):
+            return self._dichotomy(mid_point, max_bound)
+        else:
+            return self._dichotomy(min_bound, mid_point)
+
+    def can_produce(self, qty) -> bool:
+        self.available_reactants = {
+            'ORE': Element('ORE', 1000000000000),
+            'FUEL': Element('FUEL', -1 * qty)
+        }
+        self.run_lab()
+        return self.available_reactants['ORE'].qty > 0
 
 
 def parse_input(input_str: str) -> Lab:
@@ -114,15 +118,15 @@ def parse_input(input_str: str) -> Lab:
 
 if __name__ == '__main__':
     input_str = get_input('14')
-    input_str = """157 ORE => 5 NZVS
-165 ORE => 6 DCFZ
-44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
-12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
-179 ORE => 7 PSHF
-177 ORE => 5 HKGWZ
-7 DCFZ, 7 PSHF => 2 XJWVT
-165 ORE => 2 GPVTF
-3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""
+#     input_str = """157 ORE => 5 NZVS
+# 165 ORE => 6 DCFZ
+# 44 XJWVT, 5 KHKGT, 1 QDVJ, 29 NZVS, 9 GPVTF, 48 HKGWZ => 1 FUEL
+# 12 HKGWZ, 1 GPVTF, 8 PSHF => 9 QDVJ
+# 179 ORE => 7 PSHF
+# 177 ORE => 5 HKGWZ
+# 7 DCFZ, 7 PSHF => 2 XJWVT
+# 165 ORE => 2 GPVTF
+# 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"""
 #     input_str = """9 ORE => 2 A
 # 8 ORE => 3 B
 # 7 ORE => 5 C
@@ -151,8 +155,6 @@ if __name__ == '__main__':
     lab = parse_input(input_str)
     log(lab)
     log('-----\n')
-
-    lab.available_reactants['ORE'] = Element('ORE', 1000000000000)
 
     # print(lab.compute_ore('FUEL'))
     print(lab.produce_max_fuel())
