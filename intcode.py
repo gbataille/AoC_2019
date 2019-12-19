@@ -63,6 +63,10 @@ class Program:
 
         return self
 
+    def reset(self, memory: List[int]) -> None:
+        self.memory = memory
+        self.instr_pointer = 0
+
 
 @dataclass
 class Param:
