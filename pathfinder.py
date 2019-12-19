@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Callable, Dict, List, Optional, Set, Tuple, TypeVar
 
 T = TypeVar("T")
 
@@ -21,6 +21,36 @@ def tile_content(tile_map: List[List[T]], position: Position) -> T:
 
     return tile_map[position.y][position.x]
 
+
+def shortest_path(
+    tile_map: List[List[T]], from_position: Position, to_position: Position,
+    authorized_tile_predicate: Callable[[Position], bool] = None
+) -> Optional[Path]:
+
+    if authorized_tile_predicate is None:
+        authorized_tile_predicate = lambda x: True
+
+    next_to_try = [(from_position, [])]
+    seen = set([from_position])
+    while True:
+        tile_pos, cur_path = next_to_try.pop(0)
+        if tile_pos == to_position:
+            return cur_path + [tile_pos]
+
+        next_tiles = [
+            tile for tile in neighbors(tile_pos)
+            if authorized_tile_predicate(tile)
+        ]
+        next_to_try.extend(
+            list(map(
+                lambda x: (x, cur_path + [x]),
+                [tile for tile in next_tiles if tile not in seen]
+            ))
+        )
+        seen = seen | set(next_tiles)
+
+        if not next_to_try:
+            return None
 
 def closest_tile(
     tile_map: List[List[T]], from_position: Position, tile_value: T,
