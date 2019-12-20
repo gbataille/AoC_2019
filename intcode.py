@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from log_utils import log
 import os
 from typing import Callable, List
 
@@ -139,7 +140,7 @@ def run_program(program: Program) -> Program:
         while True:
             program = handle_operation(program)
     except EndProgram:
-        print("\n-- Program ended --\n")
+        log("\n-- Program ended --\n", 'INTCODE')
 
     return program
 
